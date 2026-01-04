@@ -21,12 +21,22 @@ A powerful Android application for monitoring and managing thread CPU affinity. 
 
 ## Supported Devices
 
-This app is optimized for devices with Snapdragon 8 Gen2/Gen3 processors, particularly:
+### Automatic CPU Detection
+The app automatically detects your CPU configuration by reading the maximum frequency of each core, then intelligently groups cores into categories (Small/Medium/Large). This means it works with various CPU architectures:
+
+- **Snapdragon 8 Gen2/Gen3** (1+4+3 or 1+3+4 layout)
+- **Snapdragon 8 Gen1** (1+3+4 layout)
+- **Snapdragon 888/870** (1+3+4 layout)
+- **MediaTek Dimensity** series
+- **Other ARM big.LITTLE architectures**
+
+### Optimized For
+While the app works on most rooted Android devices, the CPU boost configurations are specifically tuned for:
 - **ZTE** series
 - **Nubia** series  
 - **RedMagic** gaming phones (RedMagic 8 Pro, 9 Pro, etc.)
 
-The CPU boost configurations are specifically tuned for Nubia's kernel parameters (e.g., `cpufreq_ctrl`, `walt` scheduler).
+The boost parameters target Nubia's kernel (e.g., `cpufreq_ctrl`, `walt` scheduler), but core affinity features work universally.
 
 ## Features
 
@@ -118,12 +128,17 @@ am start -a com.threadaffinity.QUICK_START -e package com.example.app
 - **− button**: Minimize to compact view
 - **× button**: Close and exit app
 
-### CPU Core Layout (Snapdragon 8 Gen2)
+### CPU Core Layout (Auto-Detected)
+
+The app automatically detects your CPU layout. Example for Snapdragon 8 Gen2:
+
 | Cores | Type | Mask |
 |-------|------|------|
 | 0-2 | Small (Efficiency) | 0x07 |
 | 3-6 | Medium (Performance) | 0x78 |
 | 7 | Large (Prime) | 0x80 |
+
+For other CPUs, the app reads `/sys/devices/system/cpu/cpuX/cpufreq/cpuinfo_max_freq` and groups cores by their maximum frequency automatically.
 
 ## Configuration Format
 
