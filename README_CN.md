@@ -91,12 +91,20 @@ cd ThreadAffinityManager
 
 ### 截图说明
 
+#### 主界面
+
+| English | 中文 |
+|:-------:|:----:|
+| <img src="imageen.png" width="280" alt="Main Interface (English)"> | <img src="imagecn.png" width="280" alt="主界面（中文）"> |
+
+#### 悬浮监控
+
 | 悬浮监控窗口 | 线程亲和性选择 |
 |:------------:|:--------------:|
 | <img src="image1.png" width="280" alt="悬浮监控"> | <img src="image2.png" width="280" alt="线程亲和性"> |
 
-- **左图**：悬浮窗显示 CPU 频率、负载和线程列表（含 CPU 占用率）
-- **右图**：点击任意线程，选择该线程应该运行在哪些 CPU 核心上
+- **悬浮监控**：显示 CPU 频率、负载和线程列表（含 CPU 占用率）
+- **线程亲和性**：点击任意线程，选择该线程应该运行在哪些 CPU 核心上
 
 ### 通过 ADB 快速启动
 ```bash

@@ -91,12 +91,20 @@ cd ThreadAffinityManager
 
 ### Screenshots
 
+#### Main Interface
+
+| English | 中文 |
+|:-------:|:----:|
+| <img src="imageen.png" width="280" alt="Main Interface (English)"> | <img src="imagecn.png" width="280" alt="主界面（中文）"> |
+
+#### Floating Monitor
+
 | Floating Monitor | Thread Affinity Selection |
 |:----------------:|:-------------------------:|
 | <img src="image1.png" width="280" alt="Floating Monitor"> | <img src="image2.png" width="280" alt="Thread Affinity"> |
 
-- **Left**: Floating window showing CPU frequencies, loads, and thread list with CPU usage
-- **Right**: Click any thread to select which CPU cores it should run on
+- **Floating Monitor**: Shows CPU frequencies, loads, and thread list with CPU usage
+- **Thread Affinity**: Click any thread to select which CPU cores it should run on
 
 ### Quick Start via ADB
 ```bash
