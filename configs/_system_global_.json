@@ -1,0 +1,21 @@
+{
+  "packageName": "_system_global_",
+  "appName": "系统全局",
+  "timestamp": 0,
+  "threadAffinities": {
+    "surfaceflinger": 224,
+    "RenderEngine": 224,
+    "composer-servic": 224,
+    "InputDispatcher": 48,
+    "InputReader": 48,
+    "android.ui": 48,
+    "writer": 48,
+    "FastMixer": 48,
+    "kswapd0": 48,
+    "init": 48,
+    "rcuop/3": 48,
+    "rcuop/4": 48,
+    "rcuop/5": 48,
+    "allocator-servi": 48
+  }
+}

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">CPU Affinity Tool</string>
+    <string name="select_app">Select App</string>
+    <string name="thread_list">Thread List</string>
+    <string name="cpu_usage">CPU Usage</string>
+    <string name="affinity">Affinity</string>
+    <string name="save_config">Save Config</string>
+    <string name="load_config">Load Config</string>
+    <string name="start_monitor">Start Floating Monitor</string>
+    <string name="stop_monitor">Stop Floating Monitor</string>
+    <string name="no_root">No Root Access</string>
+    <string name="root_granted">Root Access Granted</string>
+    <string name="config_saved">Config Saved</string>
+    <string name="config_loaded">Config Loaded</string>
+    <string name="select_cpu_cores">Select CPU Cores</string>
+    <string name="apply">Apply</string>
+    <string name="cancel">Cancel</string>
+    
+    <!-- Main Activity -->
+    <string name="title_thread_affinity">CPU Affinity Tool</string>
+    <string name="checking_root">Checking Root...</string>
+    <string name="root_yes">✓ Root</string>
+    <string name="root_no">✗ No Root</string>
+    <string name="cpu_info">CPU: %d cores (Small 0-2 | Medium 3-6 | Large 7)</string>
+    <string name="small_cores">Small 0-2</string>
+    <string name="medium_cores">Medium 3-6</string>
+    <string name="large_cores">Large 7</string>
+    <string name="target_app">Target App</string>
+    <string name="hint_select_app">Tap right to select app</string>
+    <string name="select">Select</string>
+    <string name="select_app_first">Select app then tap floating monitor</string>
+    <string name="saved_configs">Saved Configs</string>
+    <string name="config_count">%d configs</string>
+    <string name="no_saved_configs">No saved configs. Configure thread affinity via floating window.</string>
+    <string name="usage_title">Usage</string>
+    <string name="usage_content">1. Select target app\n2. Tap floating monitor to start\n3. Tap threads in floating window to configure CPU affinity\n4. Config auto-saves, applies every 10 seconds</string>
+    <string name="rules_count">%d rules</string>
+    <string name="quick_start">Start</string>
+    <string name="pid_info">PID: %d</string>
+    <string name="app_not_running">App not running</string>
+    <string name="please_start_app">App not running, please start it first</string>
+    <string name="please_select_app">Please select an app first</string>
+    <string name="added_to_config">Added to config list</string>
+    <string name="notification_denied">Notification permission denied</string>
+    
+    <!-- Config Details -->
+    <string name="package_name">Package: %s</string>
+    <string name="no_affinity_config">No thread affinity config\n\nTap threads in floating window to configure</string>
+    <string name="affinity_config_count">Thread Affinity Config (%d rules):</string>
+    <string name="close">Close</string>
+    <string name="delete_config">Delete Config</string>
+    <string name="confirm_delete">Confirm Delete</string>
+    <string name="confirm_delete_msg">Delete config for %s?</string>
+    <string name="deleted">Deleted</string>
+    
+    <!-- App Selector -->
+    <string name="search_hint">Search apps</string>
+    <string name="running_apps">Running</string>
+    <string name="all_apps">All Apps</string>
+    <string name="app_count">%d apps</string>
+    
+    <!-- Floating Window -->
+    <string name="cpu_monitor_channel">CPU Monitor</string>
+    <string name="cpu_monitor_running">CPU Monitor Running</string>
+    <string name="monitoring">Monitoring</string>
+    <string name="system_threads">System Threads</string>
+    <string name="this_app">This App</string>
+    <string name="all_cores">All Cores</string>
+    <string name="none">None</string>
+    
+    <!-- CPU Selector -->
+    <string name="clear">Clr</string>
+    <string name="small">S</string>
+    <string name="medium">M</string>
+    <string name="large">L</string>
+    <string name="all">All</string>
+    <string name="system_prefix">[System] %s</string>
+    <string name="delete">Delete</string>
+    <string name="thread_rules_count">%d thread rules</string>
+    
+    <!-- Language -->
+    <string name="language">Language</string>
+    <string name="select_language">Select Language</string>
+    <string name="lang_system">Follow System</string>
+    <string name="lang_english">English</string>
+    <string name="lang_chinese">中文</string>
+    <string name="language_changed">Language changed, restarting…</string>
+    
+    <!-- Donate -->
+    <string name="donate_title">Support Development</string>
+    <string name="donate_desc">If this app helps you, consider buying me a coffee ☕</string>
+    <string name="donate_wechat">WeChat</string>
+    <string name="donate_alipay">Alipay</string>
+    <string name="image_saved">Image saved to gallery</string>
+    <string name="image_save_failed">Failed to save image</string>
+    <string name="long_press_to_save">Long press to save</string>
+</resources>

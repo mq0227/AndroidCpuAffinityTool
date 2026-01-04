@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">CPU亲和性绑定工具</string>
+    <string name="select_app">选择应用</string>
+    <string name="thread_list">线程列表</string>
+    <string name="cpu_usage">CPU占用率</string>
+    <string name="affinity">亲和性</string>
+    <string name="save_config">保存配置</string>
+    <string name="load_config">加载配置</string>
+    <string name="start_monitor">启动悬浮监控</string>
+    <string name="stop_monitor">关闭悬浮监控</string>
+    <string name="no_root">未获取Root权限</string>
+    <string name="root_granted">Root权限已获取</string>
+    <string name="config_saved">配置已保存</string>
+    <string name="config_loaded">配置已加载</string>
+    <string name="select_cpu_cores">选择CPU核心</string>
+    <string name="apply">应用</string>
+    <string name="cancel">取消</string>
+    
+    <!-- Main Activity -->
+    <string name="title_thread_affinity">CPU亲和性绑定工具</string>
+    <string name="checking_root">检查Root...</string>
+    <string name="root_yes">✓ Root</string>
+    <string name="root_no">✗ 无Root</string>
+    <string name="cpu_info">CPU: %d核 (小核 0-2 | 中核 3-6 | 大核 7)</string>
+    <string name="small_cores">小核 0-2</string>
+    <string name="medium_cores">中核 3-6</string>
+    <string name="large_cores">大核 7</string>
+    <string name="target_app">目标应用</string>
+    <string name="hint_select_app">点击右侧选择应用</string>
+    <string name="select">选择</string>
+    <string name="select_app_first">选择应用后点击悬浮监控</string>
+    <string name="saved_configs">已保存配置</string>
+    <string name="config_count">%d 个</string>
+    <string name="no_saved_configs">暂无保存的配置，通过悬浮窗配置线程亲和性</string>
+    <string name="usage_title">使用说明</string>
+    <string name="usage_content">1. 选择目标应用\n2. 点击悬浮监控启动悬浮窗\n3. 在悬浮窗中点击线程配置CPU亲和性\n4. 配置自动保存，每10秒循环应用</string>
+    <string name="rules_count">%d 条规则</string>
+    <string name="quick_start">启动</string>
+    <string name="pid_info">PID: %d</string>
+    <string name="app_not_running">应用未运行</string>
+    <string name="please_start_app">应用未运行，请先启动应用</string>
+    <string name="please_select_app">请先选择应用</string>
+    <string name="added_to_config">已添加到配置列表</string>
+    <string name="notification_denied">通知权限被拒绝</string>
+    
+    <!-- Config Details -->
+    <string name="package_name">包名: %s</string>
+    <string name="no_affinity_config">暂无线程亲和性配置\n\n通过悬浮窗点击线程进行配置</string>
+    <string name="affinity_config_count">线程亲和性配置 (%d 条):</string>
+    <string name="close">关闭</string>
+    <string name="delete_config">删除配置</string>
+    <string name="confirm_delete">确认删除</string>
+    <string name="confirm_delete_msg">确定要删除 %s 的配置吗？</string>
+    <string name="deleted">已删除</string>
+    
+    <!-- App Selector -->
+    <string name="search_hint">搜索应用</string>
+    <string name="running_apps">运行中</string>
+    <string name="all_apps">全部应用</string>
+    <string name="app_count">共 %d 个应用</string>
+    
+    <!-- Floating Window -->
+    <string name="cpu_monitor_channel">CPU监控</string>
+    <string name="cpu_monitor_running">CPU监控运行中</string>
+    <string name="monitoring">监控中</string>
+    <string name="system_threads">系统线程</string>
+    <string name="this_app">本APP</string>
+    <string name="all_cores">全部核心</string>
+    <string name="none">无</string>
+    
+    <!-- CPU Selector -->
+    <string name="clear">清</string>
+    <string name="small">小</string>
+    <string name="medium">中</string>
+    <string name="large">大</string>
+    <string name="all">全</string>
+    <string name="system_prefix">[系统] %s</string>
+    <string name="delete">删除</string>
+    <string name="thread_rules_count">%d 条线程规则</string>
+    
+    <!-- Language -->
+    <string name="language">语言</string>
+    <string name="select_language">选择语言</string>
+    <string name="lang_system">跟随系统</string>
+    <string name="lang_english">English</string>
+    <string name="lang_chinese">中文</string>
+    <string name="language_changed">语言已更改，正在重启…</string>
+    
+    <!-- Donate -->
+    <string name="donate_title">支持开发</string>
+    <string name="donate_desc">如果这个应用对你有帮助，可以请我喝杯咖啡 ☕</string>
+    <string name="donate_wechat">微信</string>
+    <string name="donate_alipay">支付宝</string>
+    <string name="image_saved">图片已保存到相册</string>
+    <string name="image_save_failed">保存图片失败</string>
+    <string name="long_press_to_save">长按可保存图片</string>
+</resources>

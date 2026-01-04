@@ -1,0 +1,3 @@
+# 请根据你的实际NDK和SDK路径修改此文件，并重命名为 local.properties
+# sdk.dir=C\:\\Users\\YourName\\AppData\\Local\\Android\\Sdk
+# ndk.dir=C\:\\Users\\YourName\\AppData\\Local\\Android\\Sdk\\ndk\\25.2.9519653
