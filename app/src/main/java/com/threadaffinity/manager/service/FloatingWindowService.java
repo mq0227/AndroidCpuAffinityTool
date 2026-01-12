@@ -30,6 +30,7 @@ public class FloatingWindowService extends Service {
     private static final String CHANNEL_ID = "cpu_monitor_channel";
     private static final int NOTIFICATION_ID = 1;
     private static final int UPDATE_INTERVAL_MS = 1800; // 1.8秒统一刷新间隔
+    private static final int FPS_UPDATE_INTERVAL_MS = 1200; // 1.2秒帧率刷新间隔
     private static final int AFFINITY_APPLY_INTERVAL_MS = 10000; // 10秒循环应用亲和性（分散写入）
     
     // 配置文件中存储的键名（固定字符串，不随语言变化）
@@ -45,6 +46,7 @@ public class FloatingWindowService extends Service {
     private LinearLayout layoutSystemThreadsSection, layoutSystemThreads; // 系统线程区域
     private TextView tvTitle, tvCpuTotal, tvAlpha, tvMinimize, tvClose, tvExpand;
     private TextView tvSystemThreadsTitle, tvThreadsTitle;
+    private TextView tvFps, tvMiniFps; // 帧率显示
     private TextView[] tvFreqs = new TextView[8];
     private TextView[] tvMiniCores = new TextView[8];
     private View[] barCores = new View[8];
@@ -55,6 +57,7 @@ public class FloatingWindowService extends Service {
     private String packageName;
     private ScheduledExecutorService scheduler;
     private ScheduledExecutorService affinityScheduler; // 循环应用亲和性
+    private ScheduledExecutorService fpsScheduler; // 帧率更新
     private Handler mainHandler;
     private boolean isMinimized = false;
     private int cpuCount = 8;
@@ -65,6 +68,12 @@ public class FloatingWindowService extends Service {
     // CPU负载历史数据
     private long[][] lastCpuTimes = new long[9][2]; // [cpu][idle, total]
     private boolean cpuTimesInitialized = false;
+    
+    // 帧率相关
+    private volatile int currentFps = 0;
+    private long lastValidTimestamp = 0;
+    private int recentFrameCount = 0;
+    private long recentFrameStartTime = 0;
     
     // 透明度
     private int alphaLevel = 2;
@@ -219,6 +228,10 @@ public class FloatingWindowService extends Service {
         tvClose = floatingView.findViewById(R.id.tvClose);
         tvExpand = floatingView.findViewById(R.id.tvExpand);
         viewStatus = floatingView.findViewById(R.id.viewStatus);
+        
+        // 帧率显示
+        tvFps = floatingView.findViewById(R.id.tvFps);
+        tvMiniFps = floatingView.findViewById(R.id.tvMiniFps);
 
         // 频率显示
         tvFreqs[0] = floatingView.findViewById(R.id.tvFreq0);
@@ -336,6 +349,10 @@ public class FloatingWindowService extends Service {
         scheduler = Executors.newSingleThreadScheduledExecutor();
         scheduler.scheduleAtFixedRate(this::updateStats, 0, UPDATE_INTERVAL_MS, TimeUnit.MILLISECONDS);
         
+        // 帧率更新（1.2秒周期，独立调度）
+        fpsScheduler = Executors.newSingleThreadScheduledExecutor();
+        fpsScheduler.scheduleAtFixedRate(this::updateFpsAsync, 300, FPS_UPDATE_INTERVAL_MS, TimeUnit.MILLISECONDS);
+        
         // APP 线程列表更新（1.8秒周期，600ms 开始）
         threadScheduler = Executors.newSingleThreadScheduledExecutor();
         threadScheduler.scheduleAtFixedRate(this::updateThreadsAsync, 600, UPDATE_INTERVAL_MS, TimeUnit.MILLISECONDS);
@@ -349,6 +366,41 @@ public class FloatingWindowService extends Service {
         affinityScheduler.scheduleAtFixedRate(this::applyAffinityInBackground, 
             2000, AFFINITY_APPLY_INTERVAL_MS, TimeUnit.MILLISECONDS);
         Log.i(TAG, "Started monitoring for: " + packageName);
+    }
+    
+    /**
+     * 异步更新帧率（独立周期 1.2秒）
+     */
+    private void updateFpsAsync() {
+        try {
+            int fps = getCurrentFps();
+            final int finalFps = fps;
+            mainHandler.post(() -> updateFpsUI(finalFps));
+        } catch (Exception e) {
+            Log.e(TAG, "Error updating FPS: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * 更新帧率 UI
+     */
+    private void updateFpsUI(int fps) {
+        if (floatingView == null) return;
+        
+        if (fps > 0) {
+            // 根据帧率设置颜色：55+青色，40-54橙色，<40红色
+            int fpsColor = fps >= 55 ? 0xFF00BCD4 : (fps >= 40 ? 0xFFFFB74D : 0xFFEF5350);
+            String fpsText = String.valueOf(fps);
+            
+            if (tvFps != null) {
+                tvFps.setText(fpsText);
+                tvFps.setTextColor(fpsColor);
+            }
+            if (tvMiniFps != null) {
+                tvMiniFps.setText(fpsText);
+                tvMiniFps.setTextColor(fpsColor);
+            }
+        }
     }
     
     /**
@@ -1018,6 +1070,115 @@ public class FloatingWindowService extends Service {
             }
         }
         return freqs;
+    }
+    
+    /**
+     * 获取当前实时帧率
+     * 通过 SurfaceFlinger 获取目标应用 SurfaceView 的帧时间戳
+     */
+    private int getCurrentFps() {
+        try {
+            String layerName = null;
+            
+            // 获取目标应用的 SurfaceView Layer
+            if (packageName != null && !packageName.isEmpty()) {
+                // 先获取所有 Layer 列表
+                String result = RootHelper.executeRootCommand(
+                    "dumpsys SurfaceFlinger --list 2>/dev/null");
+                
+                if (result != null && !result.trim().isEmpty()) {
+                    String[] layers = result.split("\n");
+                    // 优先找 BLAST SurfaceView
+                    for (String layer : layers) {
+                        if (layer.contains(packageName) && layer.contains("BLAST")) {
+                            layerName = layer.trim();
+                            break;
+                        }
+                    }
+                    // 其次找普通 SurfaceView
+                    if (layerName == null) {
+                        for (String layer : layers) {
+                            if (layer.contains(packageName) && layer.contains("SurfaceView[")) {
+                                layerName = layer.trim();
+                                break;
+                            }
+                        }
+                    }
+                    // 最后找主窗口
+                    if (layerName == null) {
+                        for (String layer : layers) {
+                            if (layer.contains(packageName) && !layer.contains("Background") 
+                                && !layer.contains("Bounds") && !layer.contains("Task")
+                                && !layer.contains("ActivityRecord")) {
+                                layerName = layer.trim();
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            if (layerName != null) {
+                // 获取该 Layer 的帧时间戳
+                String result = RootHelper.executeRootCommand(
+                    "dumpsys SurfaceFlinger --latency '" + layerName + "' 2>/dev/null");
+                
+                if (result != null && !result.trim().isEmpty()) {
+                    String[] lines = result.trim().split("\n");
+                    
+                    // 收集有效的帧时间戳（第一列是 desiredPresentTime）
+                    List<Long> timestamps = new ArrayList<>();
+                    
+                    for (int i = 1; i < lines.length; i++) { // 跳过第一行（刷新周期）
+                        String[] parts = lines[i].trim().split("\\s+");
+                        if (parts.length >= 1) {
+                            try {
+                                long timestamp = Long.parseLong(parts[0]);
+                                // 过滤无效值
+                                if (timestamp > 0 && timestamp < 9000000000000000000L) {
+                                    timestamps.add(timestamp);
+                                }
+                            } catch (NumberFormatException e) {}
+                        }
+                    }
+                    
+                    if (timestamps.size() >= 10) {
+                        // 找到最新的连续帧序列
+                        long maxGap = 100000000L; // 100ms
+                        
+                        int continuousCount = 1;
+                        long startTime = timestamps.get(timestamps.size() - 1);
+                        long endTime = startTime;
+                        
+                        for (int i = timestamps.size() - 2; i >= 0; i--) {
+                            long gap = timestamps.get(i + 1) - timestamps.get(i);
+                            if (gap > 0 && gap < maxGap) {
+                                continuousCount++;
+                                startTime = timestamps.get(i);
+                            } else {
+                                break;
+                            }
+                        }
+                        
+                        if (continuousCount >= 5) {
+                            long duration = endTime - startTime;
+                            if (duration > 0) {
+                                float fps = (continuousCount - 1) * 1000000000.0f / duration;
+                                if (fps > 0 && fps <= 240) {
+                                    currentFps = Math.round(fps);
+                                    return currentFps;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+        } catch (Exception e) {
+            Log.e(TAG, "Error getting FPS: " + e.getMessage());
+        }
+        
+        return currentFps > 0 ? currentFps : 0;
     }
     
     /**
@@ -1872,6 +2033,7 @@ public class FloatingWindowService extends Service {
         
         // 停止所有调度器
         if (scheduler != null) scheduler.shutdownNow();
+        if (fpsScheduler != null) fpsScheduler.shutdownNow();
         if (threadScheduler != null) threadScheduler.shutdownNow();
         if (sysThreadScheduler != null) sysThreadScheduler.shutdownNow();
         if (affinityScheduler != null) affinityScheduler.shutdownNow();
