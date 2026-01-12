@@ -1073,6 +1073,24 @@ public class FloatingWindowService extends Service {
     }
     
     /**
+     * 从 SurfaceFlinger --list 输出行中提取 Layer 名称
+     * 自适应两种格式：
+     * - KernelSU Next: RequestedLayerState{LayerName#ID parentId=...} -> LayerName#ID
+     * - Magisk: LayerName -> LayerName
+     */
+    private String extractLayerName(String line) {
+        int start = line.indexOf('{');
+        if (start < 0) return line.trim(); // Magisk 格式，直接返回
+        
+        // KernelSU Next 格式，提取 {} 内第一个空格前的内容
+        int end = line.indexOf(' ', start);
+        if (end < 0) end = line.indexOf('}', start);
+        if (end < 0) return line.trim();
+        
+        return line.substring(start + 1, end).trim();
+    }
+    
+    /**
      * 获取当前实时帧率
      * 通过 SurfaceFlinger 获取目标应用 SurfaceView 的帧时间戳
      */
@@ -1091,7 +1109,7 @@ public class FloatingWindowService extends Service {
                     // 优先找 BLAST SurfaceView
                     for (String layer : layers) {
                         if (layer.contains(packageName) && layer.contains("BLAST")) {
-                            layerName = layer.trim();
+                            layerName = extractLayerName(layer);
                             break;
                         }
                     }
@@ -1099,7 +1117,7 @@ public class FloatingWindowService extends Service {
                     if (layerName == null) {
                         for (String layer : layers) {
                             if (layer.contains(packageName) && layer.contains("SurfaceView[")) {
-                                layerName = layer.trim();
+                                layerName = extractLayerName(layer);
                                 break;
                             }
                         }
@@ -1110,7 +1128,7 @@ public class FloatingWindowService extends Service {
                             if (layer.contains(packageName) && !layer.contains("Background") 
                                 && !layer.contains("Bounds") && !layer.contains("Task")
                                 && !layer.contains("ActivityRecord")) {
-                                layerName = layer.trim();
+                                layerName = extractLayerName(layer);
                                 break;
                             }
                         }
