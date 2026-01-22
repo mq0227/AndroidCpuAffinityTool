@@ -1,8 +1,10 @@
 package com.threadaffinity.manager.service;
 
 import android.app.*;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.PixelFormat;
 import android.os.*;
@@ -84,6 +86,10 @@ public class FloatingWindowService extends Service {
     private float initialTouchX, initialTouchY;
     private WindowManager.LayoutParams params;
     private SharedPreferences prefs;
+    
+    // 音量键监听
+    private VolumeKeyReceiver volumeKeyReceiver;
+    private boolean isFloatingWindowVisible = true; // 悬浮窗是否可见
 
     @Override
     public void onCreate() {
@@ -97,6 +103,9 @@ public class FloatingWindowService extends Service {
         configManager = new ConfigManager(this);
         readMaxFrequencies();
         createNotificationChannel();
+        
+        // 注册音量键监听
+        registerVolumeKeyReceiver();
         
         // 注释掉自绑定，避免导致系统重启
         // bindSelfToBigCores();
@@ -2090,6 +2099,10 @@ public class FloatingWindowService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        
+        // 注销音量键监听
+        unregisterVolumeKeyReceiver();
+        
         if (scheduler != null) scheduler.shutdown();
         if (threadScheduler != null) threadScheduler.shutdown();
         if (sysThreadScheduler != null) sysThreadScheduler.shutdown();
@@ -2105,4 +2118,122 @@ public class FloatingWindowService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) { return null; }
+    
+    // ==================== 音量键监听 ====================
+    
+    /**
+     * 注册音量键监听广播接收器
+     */
+    private void registerVolumeKeyReceiver() {
+        volumeKeyReceiver = new VolumeKeyReceiver();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction("com.threadaffinity.VOLUME_DOWN");
+        registerReceiver(volumeKeyReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
+        
+        // 启动音量键监听服务（通过 root shell）
+        startVolumeKeyMonitor();
+        
+        Log.i(TAG, "Volume key receiver registered");
+    }
+    
+    /**
+     * 启动音量键监听服务（后台 shell 脚本）
+     */
+    private void startVolumeKeyMonitor() {
+        new Thread(() -> {
+            try {
+                // 使用 getevent 监听音量减键（KEY_VOLUMEDOWN = 114）
+                // 当检测到按键时，发送广播到 APP
+                String script = 
+                    "while true; do " +
+                    "  getevent -lc 1 2>/dev/null | grep -i 'KEY_VOLUMEDOWN.*DOWN' && " +
+                    "  am broadcast -a com.threadaffinity.VOLUME_DOWN --receiver-foreground 2>/dev/null; " +
+                    "done";
+                
+                RootHelper.executeRootCommandAsync(script);
+                Log.i(TAG, "Volume key monitor started");
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to start volume key monitor: " + e.getMessage());
+            }
+        }).start();
+    }
+    
+    /**
+     * 音量键广播接收器
+     */
+    private class VolumeKeyReceiver extends BroadcastReceiver {
+        private long lastPressTime = 0;
+        private static final long DEBOUNCE_DELAY = 300; // 防抖延迟 300ms
+        
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if ("com.threadaffinity.VOLUME_DOWN".equals(intent.getAction())) {
+                long currentTime = System.currentTimeMillis();
+                
+                // 防抖处理
+                if (currentTime - lastPressTime < DEBOUNCE_DELAY) {
+                    return;
+                }
+                lastPressTime = currentTime;
+                
+                // 切换悬浮窗可见性
+                toggleFloatingWindowVisibility();
+            }
+        }
+    }
+    
+    /**
+     * 切换悬浮窗显示/隐藏
+     * 注意：只是隐藏视图，后台线程继续运行
+     */
+    private void toggleFloatingWindowVisibility() {
+        mainHandler.post(() -> {
+            if (floatingView == null || windowManager == null) {
+                return;
+            }
+            
+            isFloatingWindowVisible = !isFloatingWindowVisible;
+            
+            if (isFloatingWindowVisible) {
+                // 显示悬浮窗
+                floatingView.setVisibility(View.VISIBLE);
+                Log.i(TAG, "Floating window shown (volume key)");
+            } else {
+                // 隐藏悬浮窗
+                floatingView.setVisibility(View.GONE);
+                Log.i(TAG, "Floating window hidden (volume key)");
+            }
+        });
+    }
+    
+    /**
+     * 注销音量键监听
+     */
+    private void unregisterVolumeKeyReceiver() {
+        if (volumeKeyReceiver != null) {
+            try {
+                unregisterReceiver(volumeKeyReceiver);
+                volumeKeyReceiver = null;
+                Log.i(TAG, "Volume key receiver unregistered");
+            } catch (Exception e) {
+                Log.e(TAG, "Error unregistering volume key receiver: " + e.getMessage());
+            }
+        }
+        
+        // 停止音量键监听服务
+        stopVolumeKeyMonitor();
+    }
+    
+    /**
+     * 停止音量键监听服务
+     */
+    private void stopVolumeKeyMonitor() {
+        try {
+            // 杀死 getevent 进程
+            RootHelper.executeRootCommand("pkill -f 'getevent.*KEY_VOLUMEDOWN'");
+            Log.i(TAG, "Volume key monitor stopped");
+        } catch (Exception e) {
+            Log.e(TAG, "Error stopping volume key monitor: " + e.getMessage());
+        }
+    }
 }

@@ -28,6 +28,25 @@ public class RootHelper {
     public static String executeRootCommand(String command) {
         return RootShell.execute(command, 5000);
     }
+    
+    /**
+     * 异步执行Root命令（不等待结果，用于长时间运行的后台任务）
+     */
+    public static void executeRootCommandAsync(String command) {
+        new Thread(() -> {
+            try {
+                Process process = Runtime.getRuntime().exec("su");
+                java.io.DataOutputStream os = new java.io.DataOutputStream(process.getOutputStream());
+                os.writeBytes(command + "\n");
+                os.writeBytes("exit\n");
+                os.flush();
+                // 不等待结果，让进程在后台运行
+                Log.d(TAG, "Async root command started: " + command.substring(0, Math.min(50, command.length())));
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to execute async root command: " + e.getMessage());
+            }
+        }).start();
+    }
 
     /**
      * 直接读取CPU频率（不需要root）
